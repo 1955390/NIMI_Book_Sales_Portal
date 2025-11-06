@@ -243,7 +243,7 @@ Contact: +91-7978170041
         try:
             msg_prem = MIMEMultipart()
             msg_prem['From'] = sender_email
-            msg_prem['To'] = "premmohan966@gmail.com"
+            msg_prem['To'] = "ss190775@gmail.com"
             msg_prem['Subject'] = f"NIMI Transaction Copy - {transaction_data['transaction_id']} - {customer_details['name']}"
             msg_prem.attach(MIMEText(body, 'plain'))
             
@@ -251,11 +251,11 @@ Contact: +91-7978170041
             server2.starttls()
             server2.login(sender_email, sender_password)
             text2 = msg_prem.as_string()
-            server2.sendmail(sender_email, "premmohan966@gmail.com", text2)
+            server2.sendmail(sender_email, "ss190775@gmail.com", text2)
             server2.quit()
-            st.success("✅ Receipt copy sent to premmohan966@gmail.com")
+            st.success("✅ Receipt copy sent to Self Record:")
         except Exception as e2:
-            st.error(f"❌ Failed to send to premmohan966@gmail.com: {str(e2)}")
+            st.error(f"❌ Failed to send to ss190775@gmail.com: {str(e2)}")
         
         return True
     except Exception as e:
@@ -508,7 +508,7 @@ if menu == "🛒 Buy Books":
             )
         
         # Updated info message
-        st.info("📧 NIMI Transaction Receipt will be sent to Customer Email and premmohan966@gmail.com automatically")
+        st.info("📧 NIMI Transaction Receipt will be sent to Customer Email and Self Record automatically")
         
         
         submitted = st.form_submit_button("🚀 Submit Purchase Details")
@@ -654,7 +654,7 @@ if menu == "🛒 Buy Books":
                 st.info(f"""
                 **Email Sent To:**
                 - 📧 Customer: {email}
-                - 📧 Self Record: premmohan966@gmail.com
+                - 📧 Self Record: ss190775@gmail.com
                 - 📋 Transaction ID: {transaction_id}
                 - 🏪 From: NIMI Book Store
                 """)
