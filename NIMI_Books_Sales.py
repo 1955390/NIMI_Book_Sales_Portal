@@ -335,13 +335,13 @@ st.sidebar.title("📚 NIMI Book Store")
 menu = st.sidebar.radio("Navigation", ["🛒 Buy Books", "📦 Order History", "📊 Stock Info"])
 
 # -----------------------------------------------------------
-# BUY BOOKS TAB
+# BUY BOOKS TAB - REORDERED AS REQUESTED
 # -----------------------------------------------------------
 if menu == "🛒 Buy Books":
     st.header("🛒 Buy Books")
     st.write("Select books, enter your details and upload purchase proof for cashback/discount approval.")
     
-    # Book selection section (OUTSIDE the form)
+    # 1st: Select Books Section
     if books_data:
         st.subheader("📚 Select Books")
         
@@ -420,73 +420,129 @@ if menu == "🛒 Buy Books":
                         st.rerun()
         else:
             st.warning("🔍 No books found matching your search.")
-        
-        # Display selected books with edit and delete options
-        if st.session_state.selected_books:
-            st.write("### 🛒 Your Cart")
-            
-            # Create display data with edit options
-            display_data = []
-            grand_total = 0
-            
-            for i, book in enumerate(st.session_state.selected_books):
-                item_total = book['unit_price'] * book['quantity']
-                grand_total += item_total
-                
-                # Create columns for each book item
-                col1, col2, col3, col4, col5 = st.columns([4, 1, 1, 1, 1])
-                
-                with col1:
-                    st.write(f"**{book['title']}**")
-                
-                with col2:
-                    # Edit quantity
-                    new_qty = st.number_input(
-                        f"Qty",
-                        min_value=1,
-                        max_value=st.session_state.stock_data.get(book['title'], 10),
-                        value=book['quantity'],
-                        key=f"qty_{i}"
-                    )
-                    if new_qty != book['quantity']:
-                        book['quantity'] = new_qty
-                        book['total'] = book['unit_price'] * new_qty
-                        st.rerun()
-                
-                with col3:
-                    st.write(f"₹{book['unit_price']}")
-                
-                with col4:
-                    st.write(f"₹{book['total']}")
-                
-                with col5:
-                    if st.button("🗑️", key=f"delete_{i}"):
-                        st.session_state.selected_books.pop(i)
-                        st.rerun()
-                
-                display_data.append({
-                    'Book': book['title'],
-                    'Quantity': book['quantity'],
-                    'Unit Price': f"₹{book['unit_price']}",
-                    'Total': f"₹{item_total}"
-                })
-            
-            st.success(f"**🎯 Grand Total: ₹{grand_total}**")
-            
-            # Clear all button
-            if st.button("🗑️ Clear All Books", type="secondary"):
-                st.session_state.selected_books = []
-                st.rerun()
-        else:
-            st.info("🛒 Your cart is empty. Add books to proceed.")
-            grand_total = 0
     else:
         st.warning("No books available in the database.")
+    
+    st.divider()
+    
+    # 2nd: Your Cart Section
+    if st.session_state.selected_books:
+        st.subheader("🛒 Your Cart")
+        
+        # Create display data with edit options
+        display_data = []
+        grand_total = 0
+        
+        for i, book in enumerate(st.session_state.selected_books):
+            item_total = book['unit_price'] * book['quantity']
+            grand_total += item_total
+            
+            # Create columns for each book item
+            col1, col2, col3, col4, col5 = st.columns([4, 1, 1, 1, 1])
+            
+            with col1:
+                st.write(f"**{book['title']}**")
+            
+            with col2:
+                # Edit quantity
+                new_qty = st.number_input(
+                    f"Qty",
+                    min_value=1,
+                    max_value=st.session_state.stock_data.get(book['title'], 10),
+                    value=book['quantity'],
+                    key=f"qty_{i}"
+                )
+                if new_qty != book['quantity']:
+                    book['quantity'] = new_qty
+                    book['total'] = book['unit_price'] * new_qty
+                    st.rerun()
+            
+            with col3:
+                st.write(f"₹{book['unit_price']}")
+            
+            with col4:
+                st.write(f"₹{book['total']}")
+            
+            with col5:
+                if st.button("🗑️", key=f"delete_{i}"):
+                    st.session_state.selected_books.pop(i)
+                    st.rerun()
+            
+            display_data.append({
+                'Book': book['title'],
+                'Quantity': book['quantity'],
+                'Unit Price': f"₹{book['unit_price']}",
+                'Total': f"₹{item_total}"
+            })
+        
+        st.success(f"**🎯 Cart Total: ₹{grand_total:,.2f}**")
+        
+        # Clear all button
+        if st.button("🗑️ Clear All Books", type="secondary"):
+            st.session_state.selected_books = []
+            st.rerun()
+    else:
+        st.info("🛒 Your cart is empty. Add books to proceed.")
         grand_total = 0
     
     st.divider()
     
-    # Customer details section (INSIDE the form)
+    # 3rd: Discount & Payment Details Section
+    if st.session_state.selected_books:
+        st.subheader("💰 Discount & Payment Details")
+        
+        # Calculate discount based on cart total
+        if grand_total >= 35001:
+            discount_rate = 30
+            discount_type = "30% (Bulk Discount)"
+            cashback = "5% Cashback Eligible"
+        elif grand_total >= 10001:
+            discount_rate = 25
+            discount_type = "25% (Premium Discount)"
+            cashback = "Not Eligible"
+        elif grand_total >= 5001:
+            discount_rate = 20
+            discount_type = "20% (Standard Discount)"
+            cashback = "Not Eligible"
+        elif grand_total >= 3001:
+            discount_rate = 10
+            discount_type = "10% (Basic Discount)"
+            cashback = "Not Eligible"
+        else:
+            discount_rate = 0
+            discount_type = "No discount available"
+            cashback = "Not Eligible"
+        
+        discount_amount = (grand_total * discount_rate) / 100
+        final_amount = grand_total - discount_amount
+        
+        # Display discount details
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("🛒 Cart Total", f"₹{grand_total:,.2f}")
+        
+        with col2:
+            st.metric("🎁 Discount Applied", f"₹{discount_amount:,.2f}")
+        
+        with col3:
+            st.metric("💳 Final Amount", f"₹{final_amount:,.2f}")
+        
+        # Display discount breakdown
+        st.info(f"""
+        **Discount Breakdown:**
+        - Original Amount: ₹{grand_total:,.2f}
+        - Discount Type: {discount_type}
+        - Discount Amount: ₹{discount_amount:,.2f}
+        - Final Payable: ₹{final_amount:,.2f}
+        - Cashback Status: {cashback}
+        """)
+    else:
+        final_amount = 0
+    
+    st.divider()
+    
+    # 4th: Customer Details Section (INSIDE the form)
     with st.form("purchase_form"):
         st.subheader("👤 Customer Details")
         col1, col2 = st.columns(2)
@@ -503,13 +559,12 @@ if menu == "🛒 Buy Books":
                 "💰 Total Purchase Amount (₹) *", 
                 min_value=0.0, 
                 step=100.0, 
-                value=float(grand_total),
+                value=float(final_amount) if 'final_amount' in locals() else 0.0,
                 key="amount_field"
             )
         
         # Updated info message
         st.info("📧 NIMI Transaction Receipt will be sent to Customer Email and Self Record automatically")
-        
         
         submitted = st.form_submit_button("🚀 Submit Purchase Details")
     
@@ -530,7 +585,7 @@ if menu == "🛒 Buy Books":
                     if st.session_state.stock_data[book['title']] < 0:
                         st.session_state.stock_data[book['title']] = 0
             
-            # Calculate discount
+            # Calculate discount (using the same logic as above)
             if amount >= 35001:
                 discount_rate = 30
                 discount_type = "30% (Bulk Discount)"
