@@ -128,7 +128,8 @@ data = """Sr.No.,Title,Unit Price
 114,Wireman 1st Year Theory - Hindi - Revised NSQF LEVEL 4 (1200),455
 115,Wireman 2nd Year Practical Hindi Revised NSQF LEVEL 4 (1200),290
 116,Wireman 2nd Year Theory Hindi - Revised NSQF LEVEL 4 (1200),220
-117	Fitter 2nd Year Theory - Hindi - Revised NSQF LEVEL 4 (1200),340"""
+117,Fitter 2nd Year Theory - Hindi - Revised NSQF LEVEL 4 (1200),340
+"""
 
 # Initialize session state for cart and stock
 if 'selected_books' not in st.session_state:
@@ -938,5 +939,6 @@ elif menu == "📊 Stock Info":
                 st.warning("⚠️ Please enter an email address.")
     
     st.info("💡 Stock updates automatically when purchases are made. All books start with 50 units initial stock.")
+
 
 
