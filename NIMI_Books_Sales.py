@@ -127,14 +127,15 @@ data = """Sr.No.,Title,Unit Price
 113,Welder Theory Hindi - Revised NSQF LEVEL 3 (1200),290
 114,Wireman 1st Year Theory - Hindi - Revised NSQF LEVEL 4 (1200),455
 115,Wireman 2nd Year Practical Hindi Revised NSQF LEVEL 4 (1200),290
-116,Wireman 2nd Year Theory Hindi - Revised NSQF LEVEL 4 (1200),220"""
+116,Wireman 2nd Year Theory Hindi - Revised NSQF LEVEL 4 (1200),220
+117	Fitter 2nd Year Theory - Hindi - Revised NSQF LEVEL 4 (1200),340"""
 
 # Initialize session state for cart and stock
 if 'selected_books' not in st.session_state:
     st.session_state.selected_books = []
 
 if 'stock_data' not in st.session_state:
-    # Parse initial stock from data - ALL BOOKS START WITH 10 QUANTITY
+    # Parse initial stock from data - ALL BOOKS START WITH 50 QUANTITY
     lines = data.strip().split('\n')
     stock_dict = {}
     for line in lines[1:]:  # Skip header
@@ -142,8 +143,8 @@ if 'stock_data' not in st.session_state:
             parts = line.split(',')
             if len(parts) >= 3:
                 title = parts[1].strip()
-                # Initialize ALL books with 10 stock
-                stock_dict[title] = 10
+                # Initialize ALL books with 50 stock
+                stock_dict[title] = 50
     st.session_state.stock_data = stock_dict
 
 # Parse book data
@@ -448,7 +449,7 @@ if menu == "🛒 Buy Books":
                 new_qty = st.number_input(
                     f"Qty",
                     min_value=1,
-                    max_value=st.session_state.stock_data.get(book['title'], 10),
+                    max_value=st.session_state.stock_data.get(book['title'], 50),
                     value=book['quantity'],
                     key=f"qty_{i}"
                 )
@@ -936,4 +937,5 @@ elif menu == "📊 Stock Info":
             else:
                 st.warning("⚠️ Please enter an email address.")
     
-    st.info("💡 Stock updates automatically when purchases are made. All books start with 10 units initial stock.")
+    st.info("💡 Stock updates automatically when purchases are made. All books start with 50 units initial stock.")
+
