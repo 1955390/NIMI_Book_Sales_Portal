@@ -387,7 +387,7 @@ if menu == "🛒 Buy Books":
                 st.caption(f"Stock: {current_stock} units")
             
             with col3:
-                max_quantity = min(10, current_stock)  # Limit by stock availability
+                max_quantity = min(50, current_stock)  # Limit by stock availability
                 new_quantity = st.number_input(
                     "🔢 Quantity",
                     min_value=1,
@@ -938,4 +938,5 @@ elif menu == "📊 Stock Info":
                 st.warning("⚠️ Please enter an email address.")
     
     st.info("💡 Stock updates automatically when purchases are made. All books start with 50 units initial stock.")
+
 
