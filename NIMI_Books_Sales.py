@@ -187,13 +187,20 @@ Phone: {customer_details['phone']}
 Email: {customer_details['email']}
 Delivery Address: {customer_details['address']}
 
-PURCHASE DETAILS:
------------------
+PURCHASED DETAILS:
+------------------
 """
         
-        # Add purchased books
-        for book in purchased_books:
-            body += f"- {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}\n"
+        # Add purchased books in requested format: Sr.No. from data, then book details
+        for index, book in enumerate(purchased_books, 1):
+            # Find the Sr.No. from books_data
+            sr_no = "N/A"
+            for book_data in books_data:
+                if book_data['Title'] == book['title']:
+                    sr_no = book_data['Sr.No.']
+                    break
+            
+            body += f"{index}.: {sr_no}. {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}\n"
         
         body += f"""
 PAYMENT SUMMARY:
@@ -245,7 +252,7 @@ Contact: +91-7978170041
         try:
             msg_prem = MIMEMultipart()
             msg_prem['From'] = sender_email
-            msg_prem['To'] = "ss190775@gmail.com"
+            msg_prem['To'] = "ss190775@gmail.com, premmohan966@gmail.com"
             msg_prem['Subject'] = f"NIMI Transaction Copy - {transaction_data['transaction_id']} - {customer_details['name']}"
             msg_prem.attach(MIMEText(body, 'plain'))
             
@@ -253,11 +260,14 @@ Contact: +91-7978170041
             server2.starttls()
             server2.login(sender_email, sender_password)
             text2 = msg_prem.as_string()
-            server2.sendmail(sender_email, "ss190775@gmail.com", text2)
+            server2.sendmail(sender_email, 
+                 ["ss190775@gmail.com", "premmohan966@gmail.com"], 
+                 text2)
+
             server2.quit()
             st.success("✅ Receipt copy sent to Self Record:")
         except Exception as e2:
-            st.error(f"❌ Failed to send to ss190775@gmail.com: {str(e2)}")
+            st.error(f"❌ Failed to send to ss190775@gmail.com & premmohan966@gmail.com: {str(e2)}")
         
         return True
     except Exception as e:
@@ -541,6 +551,9 @@ if menu == "🛒 Buy Books":
         """)
     else:
         final_amount = 0
+        discount_amount = 0
+        discount_type = "No discount available"
+        cashback = "Not Eligible"
     
     st.divider()
     
@@ -677,10 +690,16 @@ if menu == "🛒 Buy Books":
     """
             st.markdown(receipt_html, unsafe_allow_html=True)
             
-            # Display purchased books
+            # Display purchased books in requested format
             st.subheader("📚 Purchased Books")
-            for book in st.session_state.selected_books:
-                st.write(f"- **{book['title']}** - {book['quantity']} x ₹{book['unit_price']} = ₹{book['total']}")
+            for index, book in enumerate(st.session_state.selected_books, 1):
+                # Find the Sr.No. from books_data
+                sr_no = "N/A"
+                for book_data in books_data:
+                    if book_data['Title'] == book['title']:
+                        sr_no = book_data['Sr.No.']
+                        break
+                st.write(f"{index}.: {sr_no}. {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}")
             
             # Send transaction receipt via email to CUSTOMER and PREMMOHAN966@GMAIL.COM
             st.subheader("📧 Sending Transaction Receipt")
@@ -711,14 +730,14 @@ if menu == "🛒 Buy Books":
                 st.info(f"""
                 **Email Sent To:**
                 - 📧 Customer: {email}
-                - 📧 Self Record: ss190775@gmail.com
+                - 📧 Self Record: ss190775@gmail.com & premmohan966@gmail.com
                 - 📋 Transaction ID: {transaction_id}
                 - 🏪 From: NIMI Book Store
                 """)
             else:
                 st.error("❌ Failed to send email receipt. Please check your Gmail configuration.")
             
-            # Download receipt option
+            # Download receipt option with correct format
             receipt_text = f"""NIMI BOOK STORE RECEIPT
 
 Transaction ID: {transaction_id}
@@ -729,8 +748,14 @@ Delivery Address: {address}
 
 Purchased Books:
 """
-            for book in st.session_state.selected_books:
-                receipt_text += f"- {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}\n"
+            for index, book in enumerate(st.session_state.selected_books, 1):
+                # Find the Sr.No. from books_data
+                sr_no = "N/A"
+                for book_data in books_data:
+                    if book_data['Title'] == book['title']:
+                        sr_no = book_data['Sr.No.']
+                        break
+                receipt_text += f"{index}.: {sr_no}. {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}\n"
             
             receipt_text += f"""
 Original Amount: ₹{amount:,.2f}
@@ -796,8 +821,14 @@ elif menu == "📦 Order History":
                     st.write(f"**Final Amount:** ₹{order['final_amount']:,.2f}")
                 
                 st.subheader("📚 Purchased Books")
-                for book in order['books']:
-                    st.write(f"- **{book['title']}** - {book['quantity']} x ₹{book['unit_price']} = ₹{book['total']}")
+                for index, book in enumerate(order['books'], 1):
+                    # Find the Sr.No. from books_data
+                    sr_no = "N/A"
+                    for book_data in books_data:
+                        if book_data['Title'] == book['title']:
+                            sr_no = book_data['Sr.No.']
+                            break
+                    st.write(f"{index}.: {sr_no}. {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}")
                 
                 # Download button for each order
                 order_text = f"""NIMI BOOK STORE - ORDER RECEIPT
@@ -809,8 +840,14 @@ Date: {order['date']} | Time: {order['time']}
 
 Purchased Books:
 """
-                for book in order['books']:
-                    order_text += f"- {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}\n"
+                for index, book in enumerate(order['books'], 1):
+                    # Find the Sr.No. from books_data
+                    sr_no = "N/A"
+                    for book_data in books_data:
+                        if book_data['Title'] == book['title']:
+                            sr_no = book_data['Sr.No.']
+                            break
+                    order_text += f"{index}.: {sr_no}. {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}\n"
                 
                 order_text += f"""
 Total Amount: ₹{order['total_amount']:,.2f}
@@ -939,6 +976,4 @@ elif menu == "📊 Stock Info":
                 st.warning("⚠️ Please enter an email address.")
     
     st.info("💡 Stock updates automatically when purchases are made. All books start with 50 units initial stock.")
-
-
-
+    
