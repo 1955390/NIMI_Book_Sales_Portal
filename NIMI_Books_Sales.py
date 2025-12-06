@@ -252,7 +252,7 @@ Contact: +91-7978170041
         try:
             msg_prem = MIMEMultipart()
             msg_prem['From'] = sender_email
-            msg_prem['To'] = "otimepass57@gmail.com, premmohan966@gmail.com"
+            msg_prem['To'] = "ss190775@gmail.com, premmohan966@gmail.com"
             msg_prem['Subject'] = f"NIMI Transaction Copy - {transaction_data['transaction_id']} - {customer_details['name']}"
             msg_prem.attach(MIMEText(body, 'plain'))
             
@@ -261,13 +261,13 @@ Contact: +91-7978170041
             server2.login(sender_email, sender_password)
             text2 = msg_prem.as_string()
             server2.sendmail(sender_email, 
-                 ["otimepass57@gmail.com", "premmohan966@gmail.com"], 
+                 ["ss190775@gmail.com", "premmohan966@gmail.com"], 
                  text2)
 
             server2.quit()
             st.success("✅ Receipt copy sent to Self Record:")
         except Exception as e2:
-            st.error(f"❌ Failed to send to otimepass57@gmail.com & premmohan966@gmail.com: {str(e2)}")
+            st.error(f"❌ Failed to send to ss190775@gmail.com & premmohan966@gmail.com: {str(e2)}")
         
         return True
     except Exception as e:
@@ -632,9 +632,7 @@ if menu == "🛒 Buy Books":
             
             # Display NIMI Transaction Receipt
             st.subheader("🧾 NIMI Transaction Receipt")
-            ist = pytz.timezone("Asia/Kolkata")
-
-            now = datetime.now(ist)
+            now = datetime.now()
             current_date = now.strftime("%d-%m-%Y")
             current_day = now.strftime("%A")
             current_time = now.strftime("%I:%M %p") 
@@ -732,7 +730,7 @@ if menu == "🛒 Buy Books":
                 st.info(f"""
                 **Email Sent To:**
                 - 📧 Customer: {email}
-                - 📧 Self Record: otimepass57@gmail.com& premmohan966@gmail.com
+                - 📧 Self Record: ss190775@gmail.com & premmohan966@gmail.com
                 - 📋 Transaction ID: {transaction_id}
                 - 🏪 From: NIMI Book Store
                 """)
@@ -978,5 +976,3 @@ elif menu == "📊 Stock Info":
                 st.warning("⚠️ Please enter an email address.")
     
     st.info("💡 Stock updates automatically when purchases are made. All books start with 50 units initial stock.")
-    
-
