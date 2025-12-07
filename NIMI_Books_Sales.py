@@ -637,10 +637,15 @@ if menu == "🛒 Buy Books":
             
             # Display NIMI Transaction Receipt
             st.subheader("🧾 NIMI Transaction Receipt")
-            now = datetime.now()
+            from datetime import datetime
+            from zoneinfo import ZoneInfo
+
+            now = datetime.now(ZoneInfo("Asia/Kolkata"))
+
             current_date = now.strftime("%d-%m-%Y")
             current_day = now.strftime("%A")
-            current_time = now.strftime("%I:%M %p")  # इससे करंट टाइम आएगा
+            current_time = now.strftime("%I:%M %p")
+  # इससे करंट टाइम आएगा
             
             # Store transaction in session state for order history
             if 'order_history' not in st.session_state:
@@ -982,3 +987,4 @@ elif menu == "📊 Stock Info":
                 st.warning("⚠️ Please enter an email address.")
     
     st.info("💡 Stock updates automatically when purchases are made. All books start with 50 units initial stock.")
+
