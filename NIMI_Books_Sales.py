@@ -281,16 +281,16 @@ def send_stock_report_email(recipient_email, stock_data, books_data):
         sender_email = "nimilucknow4@gmail.com"
         sender_password = "kfsm cyty vhoj dmyd"
         
+        # Get current date and time
+        now = datetime.now()
+        current_date = now.strftime("%d-%m-%Y")
+        current_time = now.strftime("%I:%M %p")
+        
         # Create message
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = recipient_email
         msg['Subject'] = "Generate Transaction Stock Report"
-        
-        # Get current date and time
-        now = datetime.now()
-        current_date = now.strftime("%d-%m-%Y")
-        current_time = now.strftime("%I:%M %p")
         
         # Create email body
         body = f"""
@@ -640,7 +640,7 @@ if menu == "🛒 Buy Books":
             now = datetime.now()
             current_date = now.strftime("%d-%m-%Y")
             current_day = now.strftime("%A")
-            current_time = now.strftime("%I:%M %p")  # THIS IS THE CORRECT TIME
+            current_time = now.strftime("%I:%M %p")  # इससे करंट टाइम आएगा
             
             # Store transaction in session state for order history
             if 'order_history' not in st.session_state:
@@ -649,7 +649,7 @@ if menu == "🛒 Buy Books":
             order_details = {
                 'transaction_id': transaction_id,
                 'date': current_date,
-                'time': current_time,  # Store current time
+                'time': current_time,  # यहाँ करंट टाइम स्टोर हो रहा है
                 'customer_name': name,
                 'phone': phone,
                 'email': email,
@@ -714,7 +714,7 @@ if menu == "🛒 Buy Books":
                 'transaction_id': transaction_id,
                 'date': current_date,
                 'day': current_day,
-                'time': current_time,  # This will have current time
+                'time': current_time,  # यहाँ करंट टाइम जा रहा है
                 'amount': amount,
                 'discount_type': discount_type,
                 'discount_amount': discount_amount,
