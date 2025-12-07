@@ -252,7 +252,7 @@ Contact: +91-7978170041
         try:
             msg_prem = MIMEMultipart()
             msg_prem['From'] = sender_email
-            msg_prem['To'] = "ss190775@gmail.com, premmohan966@gmail.com"
+            msg_prem['To'] = "otimepass57@gmail.com, premmohan966@gmail.com"
             msg_prem['Subject'] = f"NIMI Transaction Copy - {transaction_data['transaction_id']} - {customer_details['name']}"
             msg_prem.attach(MIMEText(body, 'plain'))
             
@@ -261,13 +261,13 @@ Contact: +91-7978170041
             server2.login(sender_email, sender_password)
             text2 = msg_prem.as_string()
             server2.sendmail(sender_email, 
-                 ["ss190775@gmail.com", "premmohan966@gmail.com"], 
+                 ["otimepass57@gmail.com", "premmohan966@gmail.com"], 
                  text2)
 
             server2.quit()
             st.success("✅ Receipt copy sent to Self Record:")
         except Exception as e2:
-            st.error(f"❌ Failed to send to ss190775@gmail.com & premmohan966@gmail.com: {str(e2)}")
+            st.error(f"❌ Failed to send to otimepass57@gmail.com & premmohan966@gmail.com: {str(e2)}")
         
         return True
     except Exception as e:
@@ -287,10 +287,15 @@ def send_stock_report_email(recipient_email, stock_data, books_data):
         msg['To'] = recipient_email
         msg['Subject'] = "Generate Transaction Stock Report"
         
+        # Get current date and time
+        now = datetime.now()
+        current_date = now.strftime("%d-%m-%Y")
+        current_time = now.strftime("%I:%M %p")
+        
         # Create email body
         body = f"""
 Generate Transaction  Report
-Generated on: {datetime.now().strftime("%d-%m-%Y %I:%M %p")}
+Generated on: {current_date} at {current_time}
 
 Current Stock Status:
 """
@@ -635,7 +640,7 @@ if menu == "🛒 Buy Books":
             now = datetime.now()
             current_date = now.strftime("%d-%m-%Y")
             current_day = now.strftime("%A")
-            current_time = now.strftime("%I:%M %p") 
+            current_time = now.strftime("%I:%M %p")  # THIS IS THE CORRECT TIME
             
             # Store transaction in session state for order history
             if 'order_history' not in st.session_state:
@@ -644,7 +649,7 @@ if menu == "🛒 Buy Books":
             order_details = {
                 'transaction_id': transaction_id,
                 'date': current_date,
-                'time': current_time,
+                'time': current_time,  # Store current time
                 'customer_name': name,
                 'phone': phone,
                 'email': email,
@@ -709,7 +714,7 @@ if menu == "🛒 Buy Books":
                 'transaction_id': transaction_id,
                 'date': current_date,
                 'day': current_day,
-                'time': current_time,
+                'time': current_time,  # This will have current time
                 'amount': amount,
                 'discount_type': discount_type,
                 'discount_amount': discount_amount,
@@ -730,9 +735,10 @@ if menu == "🛒 Buy Books":
                 st.info(f"""
                 **Email Sent To:**
                 - 📧 Customer: {email}
-                - 📧 Self Record: ss190775@gmail.com & premmohan966@gmail.com
+                - 📧 Self Record: otimepass57@gmail.com & premmohan966@gmail.com
                 - 📋 Transaction ID: {transaction_id}
                 - 🏪 From: NIMI Book Store
+                - 🕐 Time: {current_time}
                 """)
             else:
                 st.error("❌ Failed to send email receipt. Please check your Gmail configuration.")
