@@ -4,11 +4,24 @@ from io import StringIO
 import random
 import string
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
+
+# Set page configuration
+st.set_page_config(
+    page_title="NIMI Book Store",
+    page_icon="📚",
+    layout="wide"
+)
+
+# Header with images side by side
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.image("nimiheader.jpeg", use_container_width=True)
+with col2:
+    st.image("nimistore_logo.gif", use_container_width=True)
 
 # Your book data
 data = """Sr.No.,Title,Unit Price
@@ -136,15 +149,13 @@ if 'selected_books' not in st.session_state:
     st.session_state.selected_books = []
 
 if 'stock_data' not in st.session_state:
-    # Parse initial stock from data - ALL BOOKS START WITH 50 QUANTITY
     lines = data.strip().split('\n')
     stock_dict = {}
-    for line in lines[1:]:  # Skip header
+    for line in lines[1:]:
         if line.strip():
             parts = line.split(',')
             if len(parts) >= 3:
                 title = parts[1].strip()
-                # Initialize ALL books with 50 stock
                 stock_dict[title] = 50
     st.session_state.stock_data = stock_dict
 
@@ -164,14 +175,12 @@ if len(lines) > 1:
                     'Unit Price': book_info[2].strip()
                 })
 
-# Function to send transaction receipt email to CUSTOMER and otimepass57@gmail.com
+# Function to send transaction receipt email
 def send_transaction_receipt_email(customer_email, transaction_data, customer_details, purchased_books):
     try:
-        # GMAIL ACCOUNT CONFIGURATION
         sender_email = "nimilucknow4@gmail.com"
         sender_password = "kfsm cyty vhoj dmyd"
         
-        # Create email body with receipt format
         body = f"""
 NIMI BOOK STORE - Book Transaction Receipt 
 ======================
@@ -191,9 +200,7 @@ PURCHASED DETAILS:
 ------------------
 """
         
-        # Add purchased books in requested format: Sr.No. from data, then book details
         for index, book in enumerate(purchased_books, 1):
-            # Find the Sr.No. from books_data
             sr_no = "N/A"
             for book_data in books_data:
                 if book_data['Title'] == book['title']:
@@ -230,29 +237,29 @@ Contact: +91-7978170041
 📝 Note: This is a system-generated transaction receipt. Please keep this for your records.
 """
         
-        # Send to CUSTOMER EMAIL
-        try:
-            msg_customer = MIMEMultipart()
-            msg_customer['From'] = sender_email
-            msg_customer['To'] = customer_email
-            msg_customer['Subject'] = f"NIMI Transaction Receipt - {transaction_data['transaction_id']}"
-            msg_customer.attach(MIMEText(body, 'plain'))
-            
-            server1 = smtplib.SMTP('smtp.gmail.com', 587)
-            server1.starttls()
-            server1.login(sender_email, sender_password)
-            text1 = msg_customer.as_string()
-            server1.sendmail(sender_email, customer_email, text1)
-            server1.quit()
-            st.success(f"✅ Receipt sent to CUSTOMER: {customer_email}")
-        except Exception as e1:
-            st.error(f"❌ Failed to send to customer: {str(e1)}")
+        # Send to CUSTOMER EMAIL (only if provided)
+        if customer_email:
+            try:
+                msg_customer = MIMEMultipart()
+                msg_customer['From'] = sender_email
+                msg_customer['To'] = customer_email
+                msg_customer['Subject'] = f"NIMI Transaction Receipt - {transaction_data['transaction_id']}"
+                msg_customer.attach(MIMEText(body, 'plain'))
+                
+                server1 = smtplib.SMTP('smtp.gmail.com', 587)
+                server1.starttls()
+                server1.login(sender_email, sender_password)
+                text1 = msg_customer.as_string()
+                server1.sendmail(sender_email, customer_email, text1)
+                server1.quit()
+            except Exception as e1:
+                pass
         
-        # Send to otimepass57@gmail.com
+        # Send to self record emails
         try:
             msg_prem = MIMEMultipart()
             msg_prem['From'] = sender_email
-            msg_prem['To'] = "ss190775@gmail.com , otimepass57@gmail.com , abhaysalkhan@gmail.com"
+            msg_prem['To'] = "ss190775@gmail.com"
             msg_prem['Subject'] = f"NIMI Transaction Copy - {transaction_data['transaction_id']} - {customer_details['name']}"
             msg_prem.attach(MIMEText(body, 'plain'))
             
@@ -260,55 +267,44 @@ Contact: +91-7978170041
             server2.starttls()
             server2.login(sender_email, sender_password)
             text2 = msg_prem.as_string()
-            server2.sendmail(sender_email, 
-                 ["ss190775@gmail.com ", "otimepass57@gmail.com" , "abhaysalkhan@gmail.com"], 
-                 text2)
-
+            server2.sendmail(sender_email, ["ss190775@gmail.com", "otimepass57@gmail.com", "abhaysalkhan@gmail.com"], text2)
             server2.quit()
-            st.success("✅ Receipt copy sent to Self Record:")
         except Exception as e2:
-            st.error(f"❌ Failed to send to ss190775@gmail.com  & otimepass57@gmail.com & abhaysalkhan@gmail.com: {str(e2)}")
+            return False
         
         return True
     except Exception as e:
-        st.error(f"Error sending email: {str(e)}")
         return False
 
 # Function to send stock report email
 def send_stock_report_email(recipient_email, stock_data, books_data):
     try:
-        # Email configuration
         sender_email = "nimilucknow4@gmail.com"
         sender_password = "kfsm cyty vhoj dmyd"
         
-        # Get current date and time
         now = datetime.now()
         current_date = now.strftime("%d-%m-%Y")
         current_time = now.strftime("%I:%M %p")
         
-        # Create message
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = recipient_email
         msg['Subject'] = "Generate Transaction Stock Report"
         
-        # Create email body
         body = f"""
-Generate Transaction  Report
+Generate Transaction Report
 Generated on: {current_date} at {current_time}
 
 Current Stock Status:
 """
         
         for book_title, stock_count in stock_data.items():
-            # Find book price
             book_price = "N/A"
             for book in books_data:
                 if book['Title'] == book_title:
                     book_price = f"₹{book['Unit Price']}"
                     break
             
-            # Determine status
             if stock_count >= 100:
                 status = "High Stock"
             elif stock_count >= 50:
@@ -334,7 +330,6 @@ This is an automated stock report from NIMI Book Store System.
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Send email
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
         server.login(sender_email, sender_password)
@@ -344,16 +339,13 @@ This is an automated stock report from NIMI Book Store System.
         
         return True
     except Exception as e:
-        st.error(f"Error sending email: {str(e)}")
         return False
 
 # Sidebar navigation
 st.sidebar.title("📚 NIMI Book Store")
 menu = st.sidebar.radio("Navigation", ["🛒 Buy Books", "📦 Order History", "📊 Stock Info"])
 
-# -----------------------------------------------------------
-# BUY BOOKS TAB - REORDERED AS REQUESTED
-# -----------------------------------------------------------
+# BUY BOOKS TAB
 if menu == "🛒 Buy Books":
     st.header("🛒 Buy Books")
     st.write("Select books, enter your details and upload purchase proof for cashback/discount approval.")
@@ -362,17 +354,14 @@ if menu == "🛒 Buy Books":
     if books_data:
         st.subheader("📚 Select Books")
         
-        # Search functionality
         search_term = st.text_input("🔍 Search Books", placeholder="Type book name to search...", key="search_books")
         
-        # Filter books based on search
         if search_term:
             filtered_books = [book for book in books_data if search_term.lower() in book['Title'].lower()]
         else:
             filtered_books = books_data
         
         if filtered_books:
-            # Book selection interface
             col1, col2, col3, col4 = st.columns([3, 2, 1, 1])
             
             with col1:
@@ -385,7 +374,6 @@ if menu == "🛒 Buy Books":
                 )
             
             with col2:
-                # Find the selected book's price
                 book_price = 0
                 current_stock = 0
                 for book in books_data:
@@ -395,7 +383,6 @@ if menu == "🛒 Buy Books":
                             book_price = float(price_str)
                         except ValueError:
                             book_price = 0
-                        # Get current stock
                         current_stock = st.session_state.stock_data.get(new_book, 0)
                         break
                 
@@ -403,7 +390,7 @@ if menu == "🛒 Buy Books":
                 st.caption(f"Stock: {current_stock} units")
             
             with col3:
-                max_quantity = min(50, current_stock)  # Limit by stock availability
+                max_quantity = min(50, current_stock)
                 new_quantity = st.number_input(
                     "🔢 Quantity",
                     min_value=1,
@@ -414,20 +401,17 @@ if menu == "🛒 Buy Books":
                 )
             
             with col4:
-                st.write("")  # Spacing
-                st.write("")  # Spacing
+                st.write("")
+                st.write("")
                 if st.button("➕ Add Book", use_container_width=True, key="add_book"):
                     if new_book and new_quantity > 0:
-                        # Check if book already exists in selection
                         existing_index = next((i for i, item in enumerate(st.session_state.selected_books) 
                                             if item['title'] == new_book), -1)
                         
                         if existing_index != -1:
-                            # Update quantity if book exists
                             st.session_state.selected_books[existing_index]['quantity'] += new_quantity
                             st.session_state.selected_books[existing_index]['total'] = st.session_state.selected_books[existing_index]['quantity'] * st.session_state.selected_books[existing_index]['unit_price']
                         else:
-                            # Add new book
                             st.session_state.selected_books.append({
                                 'title': new_book,
                                 'quantity': new_quantity,
@@ -446,22 +430,18 @@ if menu == "🛒 Buy Books":
     if st.session_state.selected_books:
         st.subheader("🛒 Your Cart")
         
-        # Create display data with edit options
-        display_data = []
         grand_total = 0
         
         for i, book in enumerate(st.session_state.selected_books):
             item_total = book['unit_price'] * book['quantity']
             grand_total += item_total
             
-            # Create columns for each book item
             col1, col2, col3, col4, col5 = st.columns([4, 1, 1, 1, 1])
             
             with col1:
                 st.write(f"**{book['title']}**")
             
             with col2:
-                # Edit quantity
                 new_qty = st.number_input(
                     f"Qty",
                     min_value=1,
@@ -484,17 +464,9 @@ if menu == "🛒 Buy Books":
                 if st.button("🗑️", key=f"delete_{i}"):
                     st.session_state.selected_books.pop(i)
                     st.rerun()
-            
-            display_data.append({
-                'Book': book['title'],
-                'Quantity': book['quantity'],
-                'Unit Price': f"₹{book['unit_price']}",
-                'Total': f"₹{item_total}"
-            })
         
         st.success(f"**🎯 Cart Total: ₹{grand_total:,.2f}**")
         
-        # Clear all button
         if st.button("🗑️ Clear All Books", type="secondary"):
             st.session_state.selected_books = []
             st.rerun()
@@ -508,7 +480,6 @@ if menu == "🛒 Buy Books":
     if st.session_state.selected_books:
         st.subheader("💰 Discount & Payment Details")
         
-        # Calculate discount based on cart total
         if grand_total >= 35001:
             discount_rate = 30
             discount_type = "30% (Bulk Discount)"
@@ -533,7 +504,6 @@ if menu == "🛒 Buy Books":
         discount_amount = (grand_total * discount_rate) / 100
         final_amount = grand_total - discount_amount
         
-        # Display discount details
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -545,7 +515,6 @@ if menu == "🛒 Buy Books":
         with col3:
             st.metric("💳 Final Amount", f"₹{final_amount:,.2f}")
         
-        # Display discount breakdown
         st.info(f"""
         **Discount Breakdown:**
         - Original Amount: ₹{grand_total:,.2f}
@@ -562,7 +531,7 @@ if menu == "🛒 Buy Books":
     
     st.divider()
     
-    # 4th: Customer Details Section (INSIDE the form)
+    # 4th: Customer Details Section
     with st.form("purchase_form"):
         st.subheader("👤 Customer Details")
         col1, col2 = st.columns(2)
@@ -570,11 +539,10 @@ if menu == "🛒 Buy Books":
         with col1:
             name = st.text_input("👤 Full Name *", placeholder="Enter your full name", key="name_input")
             phone = st.text_input("📞 Phone Number *", placeholder="Enter 10-digit mobile number", key="phone_input")
-            email = st.text_input("📧 Email Address *", placeholder="Enter your email", key="email_input")
+            email = st.text_input("📧 Email Address (Optional)", placeholder="Enter your email", key="email_input")
             
         with col2:
             address = st.text_area("🏠 Delivery Address & Pincode *", placeholder="Enter complete delivery address", key="address_input")
-            # Auto-calculated amount field
             amount = st.number_input(
                 "💰 Total Purchase Amount (₹) *", 
                 min_value=0.0, 
@@ -583,29 +551,24 @@ if menu == "🛒 Buy Books":
                 key="amount_field"
             )
         
-        # Updated info message
-        st.info("📧 NIMI Transaction Receipt will be sent to Customer Email and Self Record automatically")
+        st.info("📧 NIMI Transaction Receipt will be sent to Customer Email (if provided) and Self Record automatically")
         
         submitted = st.form_submit_button("🚀 Submit Purchase Details")
     
-    # Process form submission outside the form
     if submitted:
         if not st.session_state.selected_books:
             st.error("Please add at least one book to your cart!")
-        elif not name or not phone or not email or not address or amount <= 0:
+        elif not name or not phone or not address or amount <= 0:
             st.error("Please fill all required fields (*) and ensure amount is greater than 0!")
         elif len(phone) != 10 or not phone.isdigit():
             st.error("Please enter a valid 10-digit phone number!")
         else:
-            # Update stock after purchase
             for book in st.session_state.selected_books:
                 if book['title'] in st.session_state.stock_data:
                     st.session_state.stock_data[book['title']] -= book['quantity']
-                    # Ensure stock doesn't go below 0
                     if st.session_state.stock_data[book['title']] < 0:
                         st.session_state.stock_data[book['title']] = 0
             
-            # Calculate discount (using the same logic as above)
             if amount >= 35001:
                 discount_rate = 30
                 discount_type = "30% (Bulk Discount)"
@@ -630,34 +593,26 @@ if menu == "🛒 Buy Books":
             discount_amount = (amount * discount_rate) / 100
             final_amount = amount - discount_amount
             
-            # Generate transaction ID
             transaction_id = 'JUR' + ''.join(random.choices(string.digits, k=8))
             
             st.success("🎉 Purchase Details Submitted Successfully!")
             
-            # Display NIMI Transaction Receipt
             st.subheader("🧾 NIMI Transaction Receipt")
-            from datetime import datetime
-            from zoneinfo import ZoneInfo
-
             now = datetime.now(ZoneInfo("Asia/Kolkata"))
-
             current_date = now.strftime("%d-%m-%Y")
             current_day = now.strftime("%A")
             current_time = now.strftime("%I:%M %p")
-  # इससे करंट टाइम आएगा
             
-            # Store transaction in session state for order history
             if 'order_history' not in st.session_state:
                 st.session_state.order_history = []
             
             order_details = {
                 'transaction_id': transaction_id,
                 'date': current_date,
-                'time': current_time,  # यहाँ करंट टाइम स्टोर हो रहा है
+                'time': current_time,
                 'customer_name': name,
                 'phone': phone,
-                'email': email,
+                'email': email if email else "Not provided",
                 'books': st.session_state.selected_books.copy(),
                 'total_amount': amount,
                 'final_amount': final_amount,
@@ -666,44 +621,42 @@ if menu == "🛒 Buy Books":
             st.session_state.order_history.append(order_details)
             
             receipt_html = f"""
-    <div style="border: 2px solid #4CAF50; padding: 20px; border-radius: 10px; background-color: #f9f9f9; font-family: 'Times New Roman';">
-        <h3 style="text-align: center; color: #4CAF50;">NIMI BOOK STORE</h3>
-        <hr>
-        <p><strong>Transaction ID:</strong> {transaction_id}</p>
-        <p><strong>Customer Name:</strong> {name}</p>
-        <p><strong>Phone:</strong> {phone}</p>
-        <p><strong>Email:</strong> {email}</p>
-        <p><strong>Delivery Address:</strong> {address}</p>
-        <hr>
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-            <div style="flex: 0 0 60%;">
-                <p><strong>Original Amount:</strong> ₹{amount:,.2f}</p>
-                <p><strong>Discount Applied:</strong> {discount_type}</p>
-                <p><strong>Discount Amount:</strong> ₹{discount_amount:,.2f}</p>
-                <p><strong>Final Amount Payable:</strong> ₹{final_amount:,.2f}</p>
-                <p><strong>Cashback Status:</strong> {cashback}</p>
-            </div>
-            <div style="flex: 0 0 40%; text-align: right; padding-left: 20px;">
-                <p>Best Regards,</p>
-                <p><strong>Bikram Sethi</strong></p>
-                <p>Consultant</p>
-                <p>NIMI Ext. Centre Lucknow</p>
-                <p>National Instructional Media Institute</p>
-            </div>
+<div style="border: 2px solid #4CAF50; padding: 20px; border-radius: 10px; background-color: #f9f9f9; font-family: 'Times New Roman';">
+    <h3 style="text-align: center; color: #4CAF50;">NIMI BOOK STORE</h3>
+    <hr>
+    <p><strong>Transaction ID:</strong> {transaction_id}</p>
+    <p><strong>Customer Name:</strong> {name}</p>
+    <p><strong>Phone:</strong> {phone}</p>
+    <p><strong>Email:</strong> {email if email else 'Not provided'}</p>
+    <p><strong>Delivery Address:</strong> {address}</p>
+    <hr>
+    <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+        <div style="flex: 0 0 60%;">
+            <p><strong>Original Amount:</strong> ₹{amount:,.2f}</p>
+            <p><strong>Discount Applied:</strong> {discount_type}</p>
+            <p><strong>Discount Amount:</strong> ₹{discount_amount:,.2f}</p>
+            <p><strong>Final Amount Payable:</strong> ₹{final_amount:,.2f}</p>
+            <p><strong>Cashback Status:</strong> {cashback}</p>
         </div>
-        <hr style="margin-top: 20px;">
-        <p style="text-align: center;"><strong>Thank you for your purchase! 📚</strong></p>
-        <p style="text-align: center; font-size: 12px;">
-            Transaction Date: {current_date} ({current_day}) | Time: {current_time}
-        </p>
+        <div style="flex: 0 0 40%; text-align: right; padding-left: 20px;">
+            <p>Best Regards,</p>
+            <p><strong>Bikram Sethi</strong></p>
+            <p>Consultant</p>
+            <p>NIMI Ext. Centre Lucknow</p>
+            <p>National Instructional Media Institute</p>
+        </div>
     </div>
-    """
+    <hr style="margin-top: 20px;">
+    <p style="text-align: center;"><strong>Thank you for your purchase! 📚</strong></p>
+    <p style="text-align: center; font-size: 12px;">
+        Transaction Date: {current_date} ({current_day}) | Time: {current_time}
+    </p>
+</div>
+"""
             st.markdown(receipt_html, unsafe_allow_html=True)
             
-            # Display purchased books in requested format
             st.subheader("📚 Purchased Books")
             for index, book in enumerate(st.session_state.selected_books, 1):
-                # Find the Sr.No. from books_data
                 sr_no = "N/A"
                 for book_data in books_data:
                     if book_data['Title'] == book['title']:
@@ -711,15 +664,13 @@ if menu == "🛒 Buy Books":
                         break
                 st.write(f"{index}.: {sr_no}. {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}")
             
-            # Send transaction receipt via email to CUSTOMER and otimepass57@gmail.com
             st.subheader("📧 Sending Transaction Receipt")
             
-            # Prepare data for email
             transaction_data = {
                 'transaction_id': transaction_id,
                 'date': current_date,
                 'day': current_day,
-                'time': current_time,  # यहाँ करंट टाइम जा रहा है
+                'time': current_time,
                 'amount': amount,
                 'discount_type': discount_type,
                 'discount_amount': discount_amount,
@@ -730,37 +681,44 @@ if menu == "🛒 Buy Books":
             customer_details = {
                 'name': name,
                 'phone': phone,
-                'email': email,
+                'email': email if email else "",
                 'address': address
             }
             
-            # Send email receipt to both addresses
-            if send_transaction_receipt_email(email, transaction_data, customer_details, st.session_state.selected_books):
+            if send_transaction_receipt_email(email if email else "", transaction_data, customer_details, st.session_state.selected_books):
                 st.success(f"✅ NIMI Transaction Receipt has been sent successfully!")
-                st.info(f"""
-                **Email Sent To:**
-                - 📧 Customer: {email}
-                - 📧 Self Record: ss190775@gmail.com  & otimepass57@gmail.com & abhaysalkhan@gmail.com
-                - 📋 Transaction ID: {transaction_id}
-                - 🏪 From: NIMI Book Store
-                - 🕐 Time: {current_time}
-                """)
+                if email:
+                    st.info(f"""
+                    **Email Sent To:**
+                    - 📧 Customer: {email}
+                    - 📧 Self Record: ss190775@gmail.com & otimepass57@gmail.com & abhaysalkhan@gmail.com
+                    - 📋 Transaction ID: {transaction_id}
+                    - 🏪 From: NIMI Book Store
+                    - 🕐 Time: {current_time}
+                    """)
+                else:
+                    st.info(f"""
+                    **Email Sent To:**
+                    - 📧 Self Record: ss190775@gmail.com & otimepass57@gmail.com & abhaysalkhan@gmail.com
+                    - 📋 Transaction ID: {transaction_id}
+                    - 🏪 From: NIMI Book Store
+                    - 🕐 Time: {current_time}
+                    - ℹ️ Note: Customer email was not provided
+                    """)
             else:
                 st.error("❌ Failed to send email receipt. Please check your Gmail configuration.")
             
-            # Download receipt option with correct format
             receipt_text = f"""NIMI BOOK STORE RECEIPT
 
 Transaction ID: {transaction_id}
 Customer Name: {name}
 Phone: {phone}
-Email: {email}
+Email: {email if email else 'Not provided'}
 Delivery Address: {address}
 
 Purchased Books:
 """
             for index, book in enumerate(st.session_state.selected_books, 1):
-                # Find the Sr.No. from books_data
                 sr_no = "N/A"
                 for book_data in books_data:
                     if book_data['Title'] == book['title']:
@@ -795,12 +753,9 @@ National Instructional Media Institute
                 key="download_receipt"
             )
             
-            # Clear cart after successful purchase
             st.session_state.selected_books = []
 
-# -----------------------------------------------------------
 # ORDER HISTORY TAB
-# -----------------------------------------------------------
 elif menu == "📦 Order History":
     st.header("📦 Your Order History")
     
@@ -833,7 +788,6 @@ elif menu == "📦 Order History":
                 
                 st.subheader("📚 Purchased Books")
                 for index, book in enumerate(order['books'], 1):
-                    # Find the Sr.No. from books_data
                     sr_no = "N/A"
                     for book_data in books_data:
                         if book_data['Title'] == book['title']:
@@ -841,7 +795,6 @@ elif menu == "📦 Order History":
                             break
                     st.write(f"{index}.: {sr_no}. {book['title']} (Qty: {book['quantity']}) - ₹{book['total']}")
                 
-                # Download button for each order
                 order_text = f"""NIMI BOOK STORE - ORDER RECEIPT
 Transaction ID: {order['transaction_id']}
 Customer: {order['customer_name']}
@@ -852,7 +805,6 @@ Date: {order['date']} | Time: {order['time']}
 Purchased Books:
 """
                 for index, book in enumerate(order['books'], 1):
-                    # Find the Sr.No. from books_data
                     sr_no = "N/A"
                     for book_data in books_data:
                         if book_data['Title'] == book['title']:
@@ -882,16 +834,12 @@ National Instructional Media Institute
                     key=f"download_{order['transaction_id']}"
                 )
 
-# -----------------------------------------------------------
 # STOCK INFO TAB
-# -----------------------------------------------------------
 elif menu == "📊 Stock Info":
     st.header("📊 Stock Information & Availability")
     
-    # Create stock dataframe from session state
     stock_list = []
     for book_title, stock_count in st.session_state.stock_data.items():
-        # Determine status based on stock count
         if stock_count >= 100:
             status = "High Stock"
             status_color = "🟢"
@@ -905,7 +853,6 @@ elif menu == "📊 Stock Info":
             status = "Out of Stock"
             status_color = "🔴"
         
-        # Find book price
         book_price = "N/A"
         for book in books_data:
             if book['Title'] == book_title:
@@ -927,7 +874,6 @@ elif menu == "📊 Stock Info":
         st.subheader("📈 Current Stock Availability")
         st.dataframe(stock_df, use_container_width=True, hide_index=True)
         
-        # Stock summary
         total_books = len(stock_df)
         high_stock = len([s for s in stock_list if "High Stock" in s['Status']])
         medium_stock = len([s for s in stock_list if "Medium Stock" in s['Status']])
@@ -971,7 +917,6 @@ elif menu == "📊 Stock Info":
                 key="download_stock"
             )
         
-        # Email stock report section
         st.subheader("📧 Email Stock Report")
         email_address = st.text_input("Enter email address to send stock report:", 
                                     placeholder="recipient@example.com",
@@ -987,7 +932,3 @@ elif menu == "📊 Stock Info":
                 st.warning("⚠️ Please enter an email address.")
     
     st.info("💡 Stock updates automatically when purchases are made. All books start with 50 units initial stock.")
-
-
-
-
